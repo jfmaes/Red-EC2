@@ -1,3 +1,7 @@
 - name: Provision AWS instances
   import_tasks: deploy_ec2.yml
 
+
+- name: Wait for ssh to come up on all instances
+  wait_for: host="{{ item }}" port=22 delay=10  timeout=300
+  loop: "{{ groups['Dynamically_Created'] }}"
