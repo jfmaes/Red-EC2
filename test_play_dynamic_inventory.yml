@@ -1,0 +1,7 @@
+- hosts: localhost
+  roles:
+   - Red-EC2
+
+- hosts: C2
+  roles:
+   - Cobalt-Strike
