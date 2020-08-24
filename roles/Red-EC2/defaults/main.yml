@@ -1,0 +1,14 @@
+#aws defaults
+ec2_region: eu-west-1
+c2_ami_id: ami-0b7668b6cfbce14eb
+redir_ami_id: ami-0b7668b6cfbce14eb
+redelk_ami_id: ami-0b7668b6cfbce14eb
+
+c2_amount: 1
+redir_amount: 1
+redelk_amount: 1
+
+ssh_user: kali
+c2_ssh_key: "{{ ssh_key_dir }}{{ c2_key_name }}.pem" 
+redir_ssh_key: "{{ ssh_key_dir }}{{ redir_key_name }}.pem" 
+redelk_ssh_key: "{{ ssh_key_dir }}{{ redelk_key_name }}.pem" 

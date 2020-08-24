@@ -1,0 +1,48 @@
+# ec2_region is eu-west-1 by default, comment this out to change your region.
+#ec2_region: eu-west-1
+
+#auth keys for AWS. the IAM you use will need full access to EC2 and R53 can be placed here or exported in your systems environment variables like this: 
+#export AWS_ACCESS_KEY_ID='AK123'
+#export AWS_SECRET_ACCESS_KEY='abc123'
+aws_access_key: ""
+aws_secret_key: ""
+
+
+
+#==================C2 specific vars=================================
+
+#ami is by default kali, comment this out if you want some other AMI
+#c2_ami_id: ami-0b7668b6cfbce14eb
+
+#The security group in your AWS you'd like your EC2 to be linked to.
+c2_security: 
+
+#The SSH key you'd like to use. (if SSH key does not already exist in AWS, this role willl create it for you and place the .pem in the directory you launched the main playbook from.
+c2_key_name: 
+
+#The instance name
+c2_instance_name: 
+
+#by default, 1 C2 server is being spun up, if you want multiple, uncomment this var.
+#c2_amount: 1
+
+
+#================== Redirector specific vars=================================
+#redir_ami_id: ami-0b7668b6cfbce14eb
+redir_security: 
+redir_key_name: 
+redir_instance_name:
+redir_amount: 0
+
+
+#================= RedELK specific vars=================================
+#redelk_ami_id: 
+redelk_security:
+redelk_key_name:
+redelk_instance_name:
+redelk_amount: 0
+
+
+#================== SSH STUFF ===========================
+#ssh_key_dir: "{{ ansible_env.HOME }}/"
+ssh_key_dir:

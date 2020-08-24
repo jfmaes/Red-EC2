@@ -1,0 +1,137 @@
+
+    - name: checks C2 SSH key, if key doesn't exists, create it.
+      ec2_key:
+         name: "{{ c2_key_name }}"
+         region: "{{ ec2_region }}"
+         aws_access_key: "{{ aws_access_key }}"
+         aws_secret_key: "{{ aws_secret_key }}"
+         force: false
+      register: c2_key_result
+      when: c2_amount != 0 and c2_key_name != ""
+
+    - name: checks redirector SSH key, if key doesn't exists, create it.
+      ec2_key:
+         name: "{{ c2_key_name }}"
+         region: "{{ ec2_region }}"
+         aws_access_key: "{{ aws_access_key }}"
+         aws_secret_key: "{{ aws_secret_key }}"
+         force: false
+      register: redir_key_result
+      when: redir_amount != 0 and redir_key_name != ""
+
+    - name: checks RedELK SSH key, if key doesn't exists, create it.
+      ec2_key:
+         name: "{{ redelk_key_name }}"
+         region: "{{ ec2_region }}"
+         aws_access_key: "{{ aws_access_key }}"
+         aws_secret_key: "{{ aws_secret_key }}"
+         force: false
+      register: redelk_key_result
+      when: redelk_amount != 0 and redelk_key_name != ""
+
+    - name: Saving C2 Key into "{{ ssh_key_dir }}"
+      copy: content="{{ c2_key_result.key.private_key }}" dest="{{ ssh_key_dir }}{{ c2_key_name }}.pem" mode=0600
+      when: c2_key_result.changed
+
+    - name: Saving Redirector Key into "{{ ssh_key_dir }}"
+      copy: content="{{ redir_key_result.key.private_key }}" dest="{{ ssh_key_dir }}{{ redir_key_name }}.pem" mode=0600
+      when: redir_key_result.changed
+
+    - name: Saving RedELK Key into "{{ ssh_key_dir }}"
+      copy: content="{{ redelk_key_result.key.private_key }}" dest="{{ ssh_key_dir }}{{ redelk_key_name }}.pem" mode=0600
+      when: redelk_key_result.changed
+
+    - name: creating C2 EC2 instance(s)
+      ec2:
+         aws_access_key: "{{ aws_access_key }}"
+         aws_secret_key: "{{ aws_secret_key }}"
+         region: "{{ ec2_region }}"
+         key_name: "{{ c2_key_name }}"
+         group: "{{ c2_security }}"
+         instance_type: t2.medium
+         image: "{{ c2_ami_id }}"
+         wait: true
+         instance_tags:
+            Name: "{{ c2_instance_name }}"
+         count_tag:
+            Name: "{{ c2_instance_name }}"
+         exact_count: "{{ c2_amount }}"
+      when: c2_amount > 0
+      register: C2
+
+    - name: creating redirector EC2 instance(s)
+      ec2:
+         aws_access_key: "{{ aws_access_key }}"
+         aws_secret_key: "{{ aws_secret_key }}"
+         region: "{{ ec2_region }}"
+         key_name: "{{ redir_key_name }}"
+         group: "{{ redir_security }}"
+         instance_type: t2.medium
+         image: "{{ redir_ami_id }}"
+         wait: true
+         instance_tags:
+            Name: "{{ redir_instance_name }}"
+         count_tag:
+            Name: "{{ redir_instance_name }}"
+         exact_count: "{{ redir_amount }}"
+      when: redir_amount > 0
+      register: redir
+
+    - name: creating RedELK EC2 instance(s)
+      ec2:
+         aws_access_key: "{{ aws_access_key }}"
+         aws_secret_key: "{{ aws_secret_key }}"
+         region: "{{ ec2_region }}"
+         key_name: "{{ redelk_key_name }}"
+         group: "{{ redelk_security }}"
+         instance_type: t2.medium
+         image: "{{ redelk_ami_id }}"
+         wait: true
+         instance_tags:
+            Name: "{{ redelk_instance_name }}"
+         count_tag:
+            Name: "{{ redelk_instance_name }}"
+         exact_count: "{{ redelk_amount }}"
+      when: redelk_amount > 0
+      register: redelk
+
+    - name: Adding C2 instance(s) to in-memory hosts groupname = C2
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groups: 
+           - C2
+           - Dynamically_Created
+        ansible_user: "{{ ssh_user }}"
+        ansible_ssh_private_key_file: "{{ c2_ssh_key }}" 
+        ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+      loop: "{{ C2.tagged_instances }}"
+      when: c2_amount > 0
+
+    - name: Adding redirector instance(s) to in-memory hosts groupname = Redirector
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groups: 
+           - Redirector
+           - Dynamically_Created
+        ansible_user: "{{ ssh_user }}"
+        ansible_ssh_private_key_file: "{{ redir_ssh_key }}"
+        ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+      loop: "{{ redir.tagged_instances }}"
+      when: redir_amount > 0
+
+    - name: Adding RedELK instance(s) to in-memory hosts groupname = RedELK
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groups: 
+           - RedELK
+           - Dynamically_Created
+        ansible_user: "{{ ssh_user }}"
+        ansible_ssh_private_key_file: "{{ redelk_ssh_key }}" 
+        ansible_ssh_extra_args: '-o StrictHostKeyChecking=no'
+      loop: "{{ redelk.tagged_instances }}"
+      when: redelk_amount > 0
+
+    - name: Displaying all Dynamically created instances
+      debug:
+       msg: "{{ item }}"
+      loop: "{{ groups['Dynamically_Created'] }}"

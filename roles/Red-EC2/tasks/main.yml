@@ -1,0 +1,3 @@
+- name: Provision AWS instances
+  import_tasks: deploy_ec2.yml
+
