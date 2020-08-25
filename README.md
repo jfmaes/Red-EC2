@@ -23,10 +23,10 @@ Although this module is capable of provisioning multiple EC2 instances of the sa
 ## Usage
 This role is intended to be ran on localhost, the role will provision EC2 instances and generate an in memory inventory file that can be used to provision the instances with other roles. <br>
 
-The dynamic inventory will look like this:
-C2 instances will be added by public IP to the C2 group
-redirectors will be added by public IP to the Redirector group
-RedELK instances will be added by public IP to the RedELK group
+The dynamic inventory will look like this: <br>
+C2 instances will be added by public IP to the C2 group <br>
+redirectors will be added by public IP to the Redirector group <br>
+RedELK instances will be added by public IP to the RedELK group <br>
 
 ALL the instances created by this role will also be added to a group called Dynamically_Created 
 This group is used for debugging purposes. 
